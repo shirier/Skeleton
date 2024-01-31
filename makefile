@@ -16,7 +16,7 @@ warehouse: clean bin/WareHouse.o bin/Order.o bin/Action.o bin/Volunteer.o bin/Cu
 	$(CC) -o bin/WareHouse bin/WareHouse.o bin/Order.o bin/Action.o bin/Volunteer.o bin/Customer.o bin/main.o 
 	$(LFLAGS)
     @echo 'Finished building target: WareHouse'
-
+ 
     @echo ' '
 
 bin/main.o: src/main.cpp
