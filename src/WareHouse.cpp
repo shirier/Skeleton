@@ -12,9 +12,9 @@ using namespace std;
 
 std::vector<std::string> split(const std::string& s, char delimiter);
 
-WareHouse::WareHouse(const string &configFilePath)
+WareHouse::WareHouse(const string &configFilePath):customerCounter(0),volunteerCounter(0),customers(),volunteers(),pendingOrders(),completedOrders(),inProcessOrders()  
 {
-    std::ifstream input( configFilePath );
+    std::ifstream input(configFilePath);
     for( std::string line; getline( input, line );)
     {
         char delimiter = ' ';
@@ -23,9 +23,16 @@ WareHouse::WareHouse(const string &configFilePath)
         //if(line.find("customer") != std::string::npos)
         if(substrings[0] == "customer")
         {
-            AddCustomer(substrings[1],substrings[2],std::stoi(substrings[3]),std::stoi(substrings[4])).act(*this);
+            if(substrings[2] == "civilian")
+            {
+                this->addCustomer(new CivilianCustomer(getCustomerCounter(), substrings[1], stoi(substrings[3]),stoi(substrings[4])));
+            }
+            else
+            {
+                this->addCustomer(new SoldierCustomer(getCustomerCounter(), substrings[1], stoi(substrings[3]),stoi(substrings[4])));
+            }
         }
-        else if(substrings[0] == "Volunteer")
+        else if(substrings[0] == "volunteer")
         {
             Volunteer *volunteer;
            if(substrings[2] == "collector")
@@ -88,6 +95,7 @@ void WareHouse::start()
         {
             //customer <customer_name> <customer_type> <customer_distance> <max_orders> 
             AddCustomer* action = new AddCustomer(substrings[1], substrings[2], stoi(substrings[3]), stoi(substrings[4]));
+            action->act(*this);
         }
         else if(substrings[0] == "restore")///ok
         {
@@ -122,6 +130,11 @@ void WareHouse::addAction(BaseAction *action)
     actionsLog.push_back(action);  
 }
 
+void WareHouse::addOrder(Order *order)
+{
+    pendingOrders.push_back(order);
+}
+
 void WareHouse::addCustomer(Customer *customer)
 {
     customers.push_back(customer);
@@ -137,13 +150,12 @@ void WareHouse::addVolunteer(Volunteer *Volunteer)
 
 Customer &WareHouse::getCustomer(int customerId) const
 {
-    for (const auto &customer : customers) {
+    for (auto &customer : customers) {
         if (customer->getId() == customerId) {
             return *customer;
         }
         
     }
-    return ;
 }
 
 
@@ -156,7 +168,6 @@ Volunteer &WareHouse::getVolunteer(int volunteerId) const
             return *vol;      
         }
     }
-    return ;
 }
 
 Order &WareHouse::getOrder(int orderId) const
@@ -176,7 +187,6 @@ Order &WareHouse::getOrder(int orderId) const
             return *order;
         }
     }
-    return ;//check about that with tom after finnish
 }
 
 const vector<BaseAction *> &WareHouse::getActions() const
@@ -474,11 +484,12 @@ void WareHouse::simulationAct()
             {
                 if(vol->canTakeOrder(*order))
                 {
+                    vol->acceptOrder(*order);
                     inProcessOrders.push_back(order);
                     order->setStatus(OrderStatus::COLLECTING);
-                    vol->acceptOrder(*order);
                     order->setCollectorId(vol->getId());
                     RemovePendingOrders.push_back(order);
+                    break;
                 }
             }
         }
@@ -488,11 +499,12 @@ void WareHouse::simulationAct()
             {
                 if(vol->canTakeOrder(*order))
                 {
+                    vol->acceptOrder(*order);
                     inProcessOrders.push_back(order);
                     order->setStatus(OrderStatus::DELIVERING);
-                    vol->acceptOrder(*order);
                     order->setDriverId(vol->getId());
                     RemovePendingOrders.push_back(order);
+                    break;
                 }
             }
         }
@@ -533,6 +545,7 @@ void WareHouse::simulationAct()
                     else if(order->getStatus()==OrderStatus::DELIVERING)
                     {
                         completedOrders.push_back(order);
+                        order->setStatus(OrderStatus::COMPLETED);
                         ordersToRemove.push_back(order);
                     }
                 }
@@ -587,7 +600,7 @@ bool WareHouse::PrintExistCustomer(int customerId)
     for (const auto &customer : customers) {
         if (customer->getId() == customerId) {
             cout <<"CustomerID: "  << customerId << endl;
-            for (const auto &order : pendingOrders) {
+            for (const auto &order : completedOrders) {
                 if (order->getCustomerId() == customerId) {
                     cout << "OrderID: " << order->getId()<<"\n" << "OrderStatus: " << Order::orderStatusToString(order->getStatus())<<endl;
                 }
@@ -597,7 +610,7 @@ bool WareHouse::PrintExistCustomer(int customerId)
                     cout << "OrderID: " << order->getId()<<"\n" << "OrderStatus: " << Order::orderStatusToString(order->getStatus())<<endl;
                 }
             }
-            for (const auto &order : completedOrders) {
+            for (const auto &order : pendingOrders) {
                 if (order->getCustomerId() == customerId) {
                     cout << "OrderID: " << order->getId()<<"\n" << "OrderStatus: " << Order::orderStatusToString(order->getStatus())<<endl;
                 }
@@ -621,11 +634,11 @@ bool WareHouse::checkExistVolunteer(int volunteerId)
     return false;
 }
 
-bool WareHouse::checkExistCustomer(string customerName)
+bool WareHouse::checkExistCustomer(int id)
 {
     for(auto& customer : customers)
     {
-        if(customer->getName()== customerName)
+        if(customer->getId()== id)
         {
             return true;      
         }

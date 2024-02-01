@@ -34,8 +34,14 @@ class WareHouse {
         bool checkExistOrder(int orderId);
         bool PrintExistCustomer(int customerId);
         bool checkExistVolunteer(int volunteerId);
-        bool checkExistCustomer(string customerName);
+        bool checkExistCustomer(int id);
         void PrintActions();
+        ~WareHouse();
+        WareHouse(const WareHouse& other);
+        WareHouse& operator=(const WareHouse& other);
+        WareHouse(WareHouse&& other) noexcept;
+        WareHouse& operator=(WareHouse&& other) noexcept;
+
 
     private:
         bool isOpen;

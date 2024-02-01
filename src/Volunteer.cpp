@@ -79,7 +79,7 @@ bool CollectorVolunteer::hasOrdersLeft() const //check about this
 
 bool CollectorVolunteer::canTakeOrder(const Order &order) const// check what about the timeleft?
 {
-    return !(this->isBusy()) && (order.getStatus()==OrderStatus::PENDING);
+    return (!(this->isBusy())) && (order.getStatus()==OrderStatus::PENDING);
 }
 
 
@@ -102,14 +102,15 @@ string CollectorVolunteer::toString() const
 
 void CollectorVolunteer::print() const
 {
-    cout << "VolunteerID: " <<this->getId() << "\n" <<"isBusy: " << this->isBusy()<<endl;
-    if(isBusy)
+    cout << "VolunteerID: " <<this->getId() <<endl;
+    
+    if(isBusy())
     {
-        cout <<"OrderID: " << this->activeOrderId <<"TimeLeft: " <<this->timeLeft <<endl;
+        cout <<"isBusy: True" << "\n" <<"OrderID: " << this->activeOrderId <<"\n" <<"TimeLeft: " <<this->timeLeft <<endl;
     }
     else
     {
-        cout <<"OrderID: None"<<"TimeLeft: None"  << endl;
+        cout <<"isBusy: False" << "\n" <<"OrderID: None"<< "\n" <<"TimeLeft: None"  << endl;
     }
     cout <<"OrdersLeft: No Limit" << endl;
 }
@@ -167,14 +168,14 @@ string LimitedCollectorVolunteer::toString() const
 
 void LimitedCollectorVolunteer::print() const
 {
-   cout << "VolunteerID: " <<this->getId() << "\n" <<"isBusy: " << this->isBusy()<<endl;
-    if(isBusy)
+   cout << "VolunteerID: " <<this->getId() <<endl;
+    if(isBusy())
     {
-        cout <<"OrderID: " << this->activeOrderId <<"TimeLeft: " <<this->getTimeLeft() <<endl;
+        cout <<"isBusy: True" << "\n"<<"OrderID: " << this->activeOrderId << "\n"<<"TimeLeft: " <<this->getTimeLeft() <<endl;
     }
     else
     {
-        cout <<"OrderID: None"<<"TimeLeft: None"  << endl;
+        cout <<"isBusy: False" << "\n"<<"OrderID: None"<< "\n"<<"TimeLeft: None"  << endl;
     }
     cout<<"OrdersLeft: "<<this->ordersLeft << endl;
 }
@@ -207,7 +208,7 @@ bool DriverVolunteer::decreaseDistanceLeft()
 {
     if(this->distanceLeft>0)
     {
-        this->distanceLeft--;
+        this->distanceLeft-=distancePerStep;
         return true;
     }
     return false;
@@ -237,14 +238,12 @@ void DriverVolunteer::acceptOrder(const Order &order)
 
 void DriverVolunteer::step()
 {
-     if(activeOrderId != -1)
+    distanceLeft-=distancePerStep;
+    if(distanceLeft<=0)
     {
-        if(this->decreaseDistanceLeft() && this->distanceLeft==0)
-        {
-            this->completedOrderId=activeOrderId;
-            this->activeOrderId=-1;
-        }
-    };
+        completedOrderId=activeOrderId;
+        activeOrderId=NO_ORDER;
+    }
 }
 
 string DriverVolunteer::toString() const
@@ -254,16 +253,16 @@ string DriverVolunteer::toString() const
 
 void DriverVolunteer::print() const
 {
-    cout << "VolunteerID: " <<this->getId() << "\n" <<"isBusy: " << this->isBusy()<<endl;
-    if(isBusy)
+    cout << "VolunteerID: " <<this->getId() <<endl;
+    if(isBusy())
     {
-        cout <<"OrderID: " << this->activeOrderId <<"TimeLeft: " <<this->distanceLeft <<endl;
+        cout <<"isBusy: True" << "\n" <<"OrderID: " << this->activeOrderId<< "\n" <<"TimeLeft: " <<this->distanceLeft <<endl;
     }
     else
     {
-        cout <<"OrderID: None"<<"TimeLeft: None"  << endl;
+        cout <<"OrderID: None"<<"\n"<<"TimeLeft: None"  << endl;
     }
-    cout<<"OrdersLeft: None"<< endl;
+    cout<<"isBusy: False" << "\n" <<"OrdersLeft: None"<< endl;
 }
 
 void DriverVolunteer::SetDistanceLeft(int distace)
@@ -320,14 +319,14 @@ string LimitedDriverVolunteer::toString() const
 
 void LimitedDriverVolunteer::print() const
 {
-    cout << "VolunteerID: " <<this->getId() << "\n" <<"isBusy: " << this->isBusy()<<endl;
-    if(isBusy)
+    cout << "VolunteerID: " <<this->getId() <<endl;
+    if(isBusy())
     {
-        cout <<"OrderID: " << this->activeOrderId <<"TimeLeft: " <<this->getDistanceLeft() <<endl;
+        cout<<"isBusy: True" <<"\n" <<"OrderID: " << this->activeOrderId<<"\n" <<"TimeLeft: " <<this->getDistanceLeft() <<endl;
     }
     else
     {
-        cout <<"OrderID: None"<<"TimeLeft: None"  << endl;
+        cout <<"isBusy: False" <<"\n"<<"OrderID: None"<< "\n"<<"TimeLeft: None"  << endl;
     }
     cout<<"OrdersLeft: "<<this->ordersLeft << endl;
 }

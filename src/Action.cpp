@@ -14,9 +14,7 @@ ActionStatus BaseAction::getStatus() const
     return status;
 }
 
-BaseAction::~BaseAction()
-{
-}
+
 
 void BaseAction::complete()
 {
@@ -41,29 +39,28 @@ AddOrder::AddOrder(int id): customerId(id){}
 void AddOrder::act(WareHouse &wareHouse)
 {
     wareHouse.addAction(this);
-    if(customerId > wareHouse.getCustomerCounter() || customerId < 0)
+    if(!wareHouse.checkExistCustomer(customerId))
     {
-        error("customer does not exist");
+        error("Cannot place this order");
         cout << "Error: " << getErrorMsg() << std::endl; /// the error string should be checked and presented in the main
     }
     else if(wareHouse.getCustomer(customerId).canMakeOrder())
     {
-        Order temp = Order(wareHouse.getOrderCounter()+1,customerId, wareHouse.getCustomer(customerId).getCustomerDistance());
-        wareHouse.addOrder(&temp);
-        wareHouse.getCustomer(customerId).addOrder(wareHouse.getOrderCounter()+1); /// not sure if this is the right way to do it
-        this->orderId = wareHouse.getOrderCounter()+1;
+        Order *temp = new Order(wareHouse.getOrderCounter(),customerId, wareHouse.getCustomer(customerId).getCustomerDistance());
+        wareHouse.addOrder(temp);
+        
+        this->orderId = wareHouse.getCustomer(customerId).addOrder(wareHouse.getOrderCounter()+1);
         complete();
     }
     else
     {
-        error("customer reached max orders");
+        error("Cannot place this order");
         cout << "Error: " << getErrorMsg() << endl;
     }
 }
 string AddOrder::toString() const 
 {
-    string ret = "Order  ";
-    return ret + to_string(this->orderId) +", Status:" + (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+    return "order " + to_string(this->customerId)  + (getStatus() == ActionStatus::COMPLETED ? " COMPLETED" : " ERROR");
 }
 
 AddOrder *AddOrder::clone() const
@@ -93,11 +90,6 @@ void AddCustomer::act(WareHouse &wareHouse)
     else if(this->maxOrders < 0)
     {
         error("max orders cannot be negative");
-        cout << "Error: " << getErrorMsg() << endl;
-    }
-    else if(wareHouse.checkExistCustomer(customerName))
-    {
-        error("customer already exists");
         cout << "Error: " << getErrorMsg() << endl;
     }
     else
@@ -137,10 +129,13 @@ string AddCustomer::toString() const
 
 //SimulateStep class
 SimulateStep::SimulateStep(int numOfSteps):numOfSteps(numOfSteps){}
-void SimulateStep::act(WareHouse &wareHouse)//do you think shoould we go on pending orders
+void SimulateStep::act(WareHouse &wareHouse)
 {
     wareHouse.addAction(this);
-    wareHouse.simulationAct();
+    for(int i=0;i<numOfSteps;i++)
+    {
+        wareHouse.simulationAct();
+    }
 }
 
 SimulateStep *SimulateStep::clone() const
@@ -156,8 +151,7 @@ SimulateStep *SimulateStep::clone() const
 
 std::string SimulateStep::toString() const
 {
-    string ret = "SimulateStep  ";
-    return ret + "NumOfSteps: " + to_string(numOfSteps) + ", Status:" + (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+    return "simulateStep " + to_string(numOfSteps) + (getStatus() == ActionStatus::COMPLETED ? " COMPLETED" : " ERROR");
 }
 
 
@@ -174,8 +168,24 @@ void PrintOrderStatus::act(WareHouse &wareHouse)
     {
         Order currentOrder=wareHouse.getOrder(orderId);
         string status =Order::orderStatusToString(currentOrder.getStatus()); 
-        cout <<"Order Id: " << orderId << "\n"<< "OrderStatus: " <<  status << "\n"<< "CustomerID: " <<currentOrder.getCustomerId() << "\n"
-        << "Collector: " <<currentOrder.getCollectorId()<<"\n" <<"Driver: "<<currentOrder.getDriverId() << endl;
+        cout <<"Order Id: " << orderId << "\n"<< "OrderStatus: " <<  status << "\n"<< "CustomerID: " <<currentOrder.getCustomerId() << endl;
+
+        if(currentOrder.getCollectorId()==-1)
+        {
+            cout<< "Collector: None" << endl;
+        }
+        else
+        {
+            cout<< "Collector: "<<currentOrder.getCollectorId()<<endl;
+        }
+        if (currentOrder.getDriverId()==-1)
+        {
+            cout<< "Driver: None" << endl;
+        }
+        else
+        {
+            cout<<"Driver: "<< currentOrder.getDriverId()<< endl;
+        }
     }
     else
     {
@@ -199,8 +209,8 @@ PrintOrderStatus *PrintOrderStatus::clone() const
 
 string PrintOrderStatus::toString() const
 {
-    string ret = "PrintOrderStatus  ";  
-    return ret + "OrderID: " + to_string(orderId) + ", Status:" + (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+ 
+    return "orderStatus: " + to_string(orderId) + (getStatus() == ActionStatus::COMPLETED ? " COMPLETED" : " ERROR");
 }
 
 
@@ -236,8 +246,7 @@ PrintCustomerStatus *PrintCustomerStatus::clone() const
 
 string PrintCustomerStatus::toString() const
 {
-    string ret = "PrintCustomerStatus  ";
-    return ret + "CustomerID: " + to_string(customerId) + ", Status:" + (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+    return "customerStatus: " + to_string(customerId) + (getStatus() == ActionStatus::COMPLETED ? " COMPLETED" : " ERROR");
 }
 
 
@@ -278,8 +287,7 @@ PrintVolunteerStatus *PrintVolunteerStatus::clone() const
 
 string PrintVolunteerStatus::toString() const
 {
-    string ret = "PrintVolunteerStatus  ";
-    return ret + "VolunteerID: " + to_string(volunteerId) + ", Status:" + (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
+    return "volunteerStatus: " + to_string(volunteerId) + (getStatus() == ActionStatus::COMPLETED ? " COMPLETED" : " ERROR");
 }
 
 
@@ -291,7 +299,6 @@ PrintActionsLog::PrintActionsLog()
 }
 void PrintActionsLog::act(WareHouse &wareHouse)
 {
-    wareHouse.addAction(this);
     if(wareHouse.getActions().empty())
     {
         error("No actions to print");
@@ -299,9 +306,11 @@ void PrintActionsLog::act(WareHouse &wareHouse)
     }
     else
     {
+        wareHouse.PrintActions();
         complete();
     }
-    wareHouse.PrintActions();
+    wareHouse.addAction(this);
+
 }
 PrintActionsLog *PrintActionsLog::clone() const
 {
@@ -315,7 +324,7 @@ PrintActionsLog *PrintActionsLog::clone() const
 }
 string PrintActionsLog::toString() const
 {
-    string ret = "PrintActionsLog  ";
+    string ret = "log ";
     return ret + (getStatus() == ActionStatus::COMPLETED ? "COMPLETED" : "ERROR");
 }
 

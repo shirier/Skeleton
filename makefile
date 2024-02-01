@@ -1,46 +1,34 @@
 CC = g++
 CFLAGS = -g -Wall -Weffc++ -std=c++11
 LFLAGS = -L/usr/lib
+INCLUDES = -Iinclude
 
-# All Targets
+
+# List of source files
+SRCS = src/main.cpp src/WareHouse.cpp src/Order.cpp src/Action.cpp src/Volunteer.cpp src/Customer.cpp
+
+# List of object files
+OBJS = $(patsubst src/%.cpp,bin/%.o,$(SRCS))
+
+# Targets
 
 all: warehouse
 
+warehouse: $(OBJS)
+	@echo 'Building target: warehouse'
+	@echo 'Invoking: C++ Linker'
+	$(CC) -o bin/warehouse $(OBJS) $(LFLAGS)
+	@echo 'Finished building target: warehouse'
+	@echo ' '
 
-warehouse: clean bin/WareHouse.o bin/Order.o bin/Action.o bin/Volunteer.o bin/Customer.o bin/main.o
+# Rule to compile source files into object files
+bin/%.o: src/%.cpp
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
-    @echo 'Invoking: C++ Linker'
-
-
-	@echo 'Building target: WareHouse'
-	$(CC) -o bin/WareHouse bin/WareHouse.o bin/Order.o bin/Action.o bin/Volunteer.o bin/Customer.o bin/main.o 
-	$(LFLAGS)
-    @echo 'Finished building target: WareHouse'
- 
-    @echo ' '
-
-bin/main.o: src/main.cpp
-
-	$(CC) $(CFLAGS) -c -Iinclude -o bin/main.o src/main.cpp
-
-bin/WareHouse.o: src/WareHouse.cpp
-	
-	$(CC) $(CFLAGS) -c -Iinclude -o bin/WareHouse.o src/WareHouse.cpp
-
-bin/Order.o: src/Order.cpp
-
-	$(CC) $(CFLAGS) -c -Iinclude -o bin/Order.o src/Order.cpp
-	
-bin/Action.o: src/Action.cpp
-
-	$(CC) $(CFLAGS) -c -Iinclude -o bin/Action.o src/Action.cpp
-	
-bin/Volunteer.o: src/Volunteer.cpp
-
-	$(CC) $(CFLAGS) -c -Iinclude -o bin/Volunteer.o src/Volunteer.cpp
-	
-bin/Customer.o: src/Customer.cpp
-
-	$(CC) $(CFLAGS) -c -Iinclude -o bin/Customer.o src/Customer.cpp
+# Clean the build directory
 clean:
+	@echo 'Cleaning'
 	rm -f bin/*
+
+# .PHONY is used to declare targets that are not real files
+.PHONY: all warehouse clean

@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Customer::Customer(int id, const string &name, int locationDistance, int maxOrders): id(id), name(name), locationDistance(locationDistance), maxOrders(maxOrders)
+Customer::Customer(int id, const string &name, int locationDistance, int maxOrders): id(id), name(name), locationDistance(locationDistance), maxOrders(maxOrders), ordersId()
 { // Add opening curly brace
 }
 
@@ -53,15 +53,16 @@ int Customer::getNumOrdersLeft() const
     return maxOrders-getNumOrders();
 }
 
-Customer::Customer(const Customer& other) 
+/*C
+ustomer::Customer(const Customer& other) 
         : id(other.id), 
           name(other.name), 
           locationDistance(other.locationDistance), 
           maxOrders(other.maxOrders), 
           ordersId(other.ordersId) {}
+          */
 
-// Destructor
-Customer::~Customer() = default;
+
 
 //Soldier class
 SoldierCustomer::SoldierCustomer(int id, const string &name, int locationDistance, int maxOrders):Customer(id, name, locationDistance, maxOrders){}

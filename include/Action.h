@@ -21,7 +21,7 @@ class BaseAction{
         virtual void act(WareHouse& wareHouse)=0;
         virtual string toString() const=0;
         virtual BaseAction* clone() const=0;
-        
+        virtual ~BaseAction()=default;
     protected:
         void complete();
         void error(string errorMsg);
