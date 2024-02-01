@@ -64,66 +64,73 @@ void WareHouse::start()
     {
         std::string input;
         std::getline(std::cin, input);
-        char delimiter = ' ';
-        std::vector<std::string> substrings = split(input, delimiter);
-        if(substrings[0] == "order") ///ok
+        if(input == "")
         {
-            AddOrder* action = new AddOrder(std::stoi(substrings[1])); 
-            action->act(*this);
+            cout << "Invalid input";
         }
-        else if(substrings[0] == "customerStatus")///ok
-        {
-            PrintCustomerStatus* action = new PrintCustomerStatus(std::stoi(substrings[1]));
-            action->act(*this);
-        }
-        else if(substrings[0] == "step") ///ok
-        {
-            SimulateStep* action = new SimulateStep(std::stoi(substrings[1]));
-            action->act(*this);
-        }
-        else if(substrings[0] == "orderStatus") ///ok
-        {
-            PrintOrderStatus* action = new PrintOrderStatus(std::stoi(substrings[1]));
-            action->act(*this);
-        }
-        else if(substrings[0] == "volunteerStatus")///ok
-        {
-            PrintVolunteerStatus* action = new PrintVolunteerStatus(std::stoi(substrings[1]));
-            action->act(*this);
-        }
-        else if(substrings[0] == "customer")///ok
-        {
-            //customer <customer_name> <customer_type> <customer_distance> <max_orders> 
-            AddCustomer* action = new AddCustomer(substrings[1], substrings[2], stoi(substrings[3]), stoi(substrings[4]));
-            action->act(*this);
-        }
-        else if(substrings[0] == "restore")///ok
-        {
-            RestoreWareHouse* action = new RestoreWareHouse;
-            action->act(*this);
-        }
-        else if(substrings[0] == "close")///ok
-        {
-            Close* action = new Close();
-            action->act(*this);
-        }
-        else if(substrings[0] == "log")///ok
-        {
-            PrintActionsLog* action = new PrintActionsLog;
-            action->act(*this);
-        }
-        else if(substrings[0] == "backup")///ok
-        {
-            BackupWareHouse* action = new BackupWareHouse;
-            action->act(*this);
-        } 
         else
         {
-            cout << "Error: " << "Invalid input" << endl;
+            char delimiter = ' ';
+            std::vector<std::string> substrings = split(input, delimiter);
+            if(substrings[0] == "order" && substrings.size() == 2) ///ok
+            {
+                AddOrder* action = new AddOrder(std::stoi(substrings[1])); 
+                action->act(*this);
+            }
+            else if(substrings[0] == "customerStatus" && substrings.size() == 2)///ok
+            {
+                PrintCustomerStatus* action = new PrintCustomerStatus(std::stoi(substrings[1]));
+                action->act(*this);
+            }
+            else if(substrings[0] == "step" && substrings.size() == 2) ///ok
+            {
+                SimulateStep* action = new SimulateStep(std::stoi(substrings[1]));
+                action->act(*this);
+            }
+            else if(substrings[0] == "orderStatus" && substrings.size() == 2) ///ok
+            {
+                PrintOrderStatus* action = new PrintOrderStatus(std::stoi(substrings[1]));
+                action->act(*this);
+            }
+            else if(substrings[0] == "volunteerStatus" && substrings.size() == 2)///ok
+            {
+                PrintVolunteerStatus* action = new PrintVolunteerStatus(std::stoi(substrings[1]));
+                action->act(*this);
+            }
+            else if(substrings[0] == "customer" && substrings.size() == 5)///ok
+            {
+                //customer <customer_name> <customer_type> <customer_distance> <max_orders> 
+                AddCustomer* action = new AddCustomer(substrings[1], substrings[2], stoi(substrings[3]), stoi(substrings[4]));
+                action->act(*this);
+            }
+            else if(substrings[0] == "restore" && substrings.size() == 1)///ok
+            {
+                RestoreWareHouse* action = new RestoreWareHouse;
+                action->act(*this);
+            }
+            else if(substrings[0] == "close" && substrings.size() == 1)///ok
+            {
+                Close* action = new Close();
+                action->act(*this);
+            }
+            else if(substrings[0] == "log" && substrings.size() == 1)///ok
+            {
+                PrintActionsLog* action = new PrintActionsLog;
+                action->act(*this);
+            }
+            else if(substrings[0] == "backup" && substrings.size() == 1)///ok
+            {
+                BackupWareHouse* action = new BackupWareHouse;
+                action->act(*this);
+            } 
+            else
+            {
+                cout << "Error: Invalid input" << endl;
+            }
         }
     }
-
 }
+
 
 void WareHouse::addAction(BaseAction *action)
 {
